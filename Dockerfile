@@ -1,4 +1,29 @@
-FROM ubuntu:focal
+#----------------------------------- #
+# gdal-base image with full build deps
+#----------------------------------- #
+FROM osgeo/gdal:ubuntu-full-3.3.1
 
-run apt update && apt install -y curl fonts-dejavu fontconfig gdal-bin spatialite-bin
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update
+RUN apt-get install -y curl fonts-dejavu fontconfig spatialite-bin ca-certificates libssl-dev
+
 RUN curl https://download.esa.int/step/snap/8.0/installers/esa-snap_all_unix_8_0.sh -o /tmp/snap_install.sh && chmod +x /tmp/snap_install.sh && /tmp/snap_install.sh -q && rm -f /tmp/snap_install.sh && snap --nosplash --nogui --modules --update-all
+
+# Set Node and Node Version Manager Versions
+ENV NODE_VERSION=12.6.0
+ENV NVM_VERSION v0.35.3
+
+# Replace shell with bash so we can source files
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+# Install NVM
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/${NVM_VERSION}/install.sh | bash
+
+# Install NODE
+RUN . ~/.nvm/nvm.sh; \
+    nvm install $NODE_VERSION; \
+    nvm use --delete-prefix $NODE_VERSION;
+
+# Install NPM
+RUN apt-get install -y npm
